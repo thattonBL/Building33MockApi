@@ -1,4 +1,6 @@
 using Building33MockApi.Services;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 using StackExchange.Redis;
 
@@ -37,6 +39,10 @@ namespace Building33MockApi
             builder.Services.AddGrpcSwagger();
             builder.Services.AddControllers();
             builder.Services.AddRazorPages();
+            builder.Services.AddHealthChecks()
+                .AddRedis(
+                connectionString,
+                name: "Redis");
 
             builder.Services.AddSwaggerGen(c =>
             {
@@ -65,6 +71,11 @@ namespace Building33MockApi
             app.MapGrpcReflectionService();
             app.MapRazorPages();
             app.MapControllers();
+            app.MapHealthChecks("/health", new HealthCheckOptions
+            {
+                Predicate = _ => true,
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
 
             app.Run();
         }
